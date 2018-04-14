@@ -28,36 +28,36 @@
 #define errExit(msg)    do { perror(msg); exit(EXIT_FAILURE); \
                                } while (0)
 
-struct timespec start, stop;        /*IdımÈrÈs kezdete Ès vÈge*/
+struct timespec start, stop;        /*Id√µm√©r√©s kezdete √©s v√©ge*/
 
 
-#define STACK_SIZE (1024 * 1024)    /* Verem mÈret a child process-nek */
-#define MAP_BUF_SIZE 100            //uid_map Ès gid_map ·tÌr·s·nak hossz·hoz
+#define STACK_SIZE (1024 * 1024)    /* Verem m√©ret a child process-nek */
+#define MAP_BUF_SIZE 100            //uid_map √©s gid_map √°t√≠r√°s√°nak hossz√°hoz
 
 struct child_args {
-  char * input;      /* Az input string ·tad·s·hoz */
-  int pipe_fd[2];    /* Pipe a parent Ès child kˆzti kommunik·ciÛhoz */
+  char * input;      /* Az input string √°tad√°s√°hoz */
+  int pipe_fd[2];    /* Pipe a parent √©s child k√∂zti kommunik√°ci√≥hoz */
 };
 
 static int child_fn(void *arg){
-    //Switch case szerkezet ahhoz, hogy a child process tudja, milyen ˙j namespace-ekben hozt·k lÈtre, Ès csak akkor ·llÌtson b·rmit is egy namespace-re vonatkozÛan, ha az is ott szerepel a lÈtrehozottak kˆzˆtt.
-    //A 'case' -ek ut·n azÈrt szerepel a ';' karakter, hogy ne kapjuk a ,,a label can only be part of a statement and a declaration is not a statement" hib·t.
+    //Switch case szerkezet ahhoz, hogy a child process tudja, milyen √∫j namespace-ekben hozt√°k l√©tre, √©s csak akkor √°ll√≠tson b√°rmit is egy namespace-re vonatkoz√≥an, ha az is ott szerepel a l√©trehozottak k√∂z√∂tt.
+    //A 'case' -ek ut√°n az√©rt szerepel a ';' karakter, hogy ne kapjuk a ,,a label can only be part of a statement and a declaration is not a statement" hib√°t.
     
      struct child_args *args = (struct child_args *) arg;           /* Cast-olni kell */
      char ch;
      
-     close(args->pipe_fd[1]);                                       /* Az Ìr·si vÈgÈt bez·rjuk a csatorn·nak, hogy */
-                                                                    /* l·ssuk az EOF -ot, amikor a parent vÈgez */
+     close(args->pipe_fd[1]);                                       /* Az √≠r√°si v√©g√©t bez√°rjuk a csatorn√°nak, hogy */
+                                                                    /* l√°ssuk az EOF -ot, amikor a parent v√©gez */
                                                                     
-     if (read(args->pipe_fd[0], &ch, 1) != 0) {                     /* Olvassuk az ¸zenetet */
+     if (read(args->pipe_fd[0], &ch, 1) != 0) {                     /* Olvassuk az √ºzenetet */
          fprintf(stderr,
              "Failure in child: read from pipe returned != 0\n");
              exit(EXIT_FAILURE);
      }
      
-     close(args->pipe_fd[0]);                                       /* Bez·rjuk az olvas·si vÈget is */
+     close(args->pipe_fd[0]);                                       /* Bez√°rjuk az olvas√°si v√©get is */
      
-     //Child processhez lÈtrehozott ˙j namespace-ekben be·llÌt·sokat vÈgz¸nk.
+     //Child processhez l√©trehozott √∫j namespace-ekben be√°ll√≠t√°sokat v√©gz√ºnk.
      for(int i = 0; i < 7; i ++){
         switch(args->input[i]) {    
             case 'c' : ;              
@@ -66,11 +66,11 @@ static int child_fn(void *arg){
             case 'i' : ;             
                 break;
                 
-            case 'n' : ;/* Internetes be·llÌt·sok a network namespace-en bel¸l */
-                        system("ip addr add 10.200.1.2/24 dev veth1");                  /* A parent processbıl lÈtrehozott veth1 interfÈszt felkonfigur·ljuk */
+            case 'n' : ;/* Internetes be√°ll√≠t√°sok a network namespace-en bel√ºl */
+                        system("ip addr add 10.200.1.2/24 dev veth1");                  /* A parent processb√µl l√©trehozott veth1 interf√©szt felkonfigur√°ljuk */
                         system("ip link set dev veth1 up");
                         system("ip link set dev lo up");
-                        system("ip route add default via 10.200.1.1");                  /* Adunk egy alap ˙tvonalat, amivel elÈrj¸k az ıs */                                                                                             /* network namespace-beli virtu·lis interfÈszt */
+                        system("ip route add default via 10.200.1.1");                  /* Adunk egy alap √∫tvonalat, amivel el√©rj√ºk az √µs */                                                                                             /* network namespace-beli virtu√°lis interf√©szt */
                         //system("ifconfig");
                         //system("ping -c 4 8.8.8.8");
                 break;
@@ -78,62 +78,62 @@ static int child_fn(void *arg){
             case 'm' : ;                         
                         char path[PATH_MAX];
                         
-                        if (getcwd(path, PATH_MAX) == NULL) {                           /* Aktu·lis ˙tvonal lekÈrÈse */
+                        if (getcwd(path, PATH_MAX) == NULL) {                           /* Aktu√°lis √∫tvonal lek√©r√©se */
                             fprintf(stderr, "ERROR: getcwd: %s\n",
                             strerror(errno));
                             exit(EXIT_FAILURE);                  
                         }
-                        strcat(path, "/rootfs");                                        /* rootfs hozz·ad·s·val megkapjuk a rootfs kˆnyvt·r ˙tvonal·t */
+                        strcat(path, "/rootfs");                                        /* rootfs hozz√°ad√°s√°val megkapjuk a rootfs k√∂nyvt√°r √∫tvonal√°t */
                         //printf("%s\n", path);   
                         
-                        char procPath[PATH_MAX];                                        /* proc kˆnyvt·r mount-ol·s·hoz ˙tvonal */
+                        char procPath[PATH_MAX];                                        /* proc k√∂nyvt√°r mount-ol√°s√°hoz √∫tvonal */
                         strcpy(procPath, path);
                         strcat(procPath, "/proc");    
                         
-                        char oldPath[PATH_MAX];                                         /* A rÈgi root kˆnyvt·r elrak·s·hoz ˙tvonal */
+                        char oldPath[PATH_MAX];                                         /* A r√©gi root k√∂nyvt√°r elrak√°s√°hoz √∫tvonal */
                         strcpy(oldPath, path);
                         strcat(oldPath, "/.pivot_root");
                         //printf("%s\n", oldPath);                                                            
                         
-                        if (mount("proc", procPath, "proc", 0, NULL) == -1) {           /* Mount-oljuk a proc kˆnyvt·rat */
+                        if (mount("proc", procPath, "proc", 0, NULL) == -1) {           /* Mount-oljuk a proc k√∂nyvt√°rat */
                             fprintf(stderr, "ERROR: mount proc: %s\n",
                             strerror(errno));
                             exit(EXIT_FAILURE);                  
                         }
                            
-                        if (mount(path, path, "", MS_BIND | MS_REC, NULL) == -1) {      /* rootfs-t hozz· mount-oljuk ˆnmag·hoz, hogy a */                                                                                               /* pivot_root egy kˆvetelmÈnye teljes¸ljˆn */
-                            fprintf(stderr, "ERROR: root mount: %s\n",                  /* Ñnew_root and put_old must not be on the same */                                                                                              /* filesystem as the current root." */
+                        if (mount(path, path, "", MS_BIND | MS_REC, NULL) == -1) {      /* rootfs-t hozz√° mount-oljuk √∂nmag√°hoz, hogy a */                                                                                               /* pivot_root egy k√∂vetelm√©nye teljes√ºlj√∂n */
+                            fprintf(stderr, "ERROR: root mount: %s\n",                  /* ‚Äûnew_root and put_old must not be on the same */                                                                                              /* filesystem as the current root." */
                             strerror(errno));
                             exit(EXIT_FAILURE);                  
                         }   
                         
                                 
-                        if (mkdir(oldPath, 0777) == -1) {                              /* LÈtrehozzuk a .pivot_root mapp·t */
-                              fprintf(stderr, "ERROR: mkdir: %s\n", strerror(errno));  /* Ha m·r egyszer megcsin·lta, itt mindig ERROR lesz*/
+                        if (mkdir(oldPath, 0777) == -1) {                              /* L√©trehozzuk a .pivot_root mapp√°t */
+                              fprintf(stderr, "ERROR: mkdir: %s\n", strerror(errno));  /* Ha m√°r egyszer megcsin√°lta, itt mindig ERROR lesz*/
                               exit(EXIT_FAILURE);                                                                 
                         }   
                         
                         //system("ls -la rootfs");
-                        if (syscall(SYS_pivot_root, path, oldPath) == -1) {            /* Megv·ltoztatjuk a root kˆnyvt·rat a rootfs-re, a rÈgi pedig ·tker¸l a .pivot_root-ba */
+                        if (syscall(SYS_pivot_root, path, oldPath) == -1) {            /* Megv√°ltoztatjuk a root k√∂nyvt√°rat a rootfs-re, a r√©gi pedig √°tker√ºl a .pivot_root-ba */
                             fprintf(stderr, "ERROR: pivot_root: %s\n",
                             strerror(errno));
                             exit(EXIT_FAILURE);                  
                         } 
                         
-                        if (chdir("/") == -1) {                                        /* Megv·ltoztatjuk az aktu·lis kˆnyvt·rat a root kˆnyv·trra */
+                        if (chdir("/") == -1) {                                        /* Megv√°ltoztatjuk az aktu√°lis k√∂nyvt√°rat a root k√∂nyv√°trra */
                             fprintf(stderr, "ERROR: chdir: %s\n",
                             strerror(errno));
                             exit(EXIT_FAILURE);                  
                         } 
                         
                         strcpy(oldPath, "/.pivot_root");
-                        if (umount2(oldPath, MNT_DETACH) == -1) {                      /* Lev·lasztjuk a .pivot_root mount-ot az ˆsszes alatta lÈvı mount-tal egy¸tt */
+                        if (umount2(oldPath, MNT_DETACH) == -1) {                      /* Lev√°lasztjuk a .pivot_root mount-ot az √∂sszes alatta l√©v√µ mount-tal egy√ºtt */
                             fprintf(stderr, "ERROR: umount: %s\n",
                             strerror(errno));
                             exit(EXIT_FAILURE);                  
                         } 
                         
-                        if (remove(oldPath) == -1) {                                   /* Tˆrˆlj¸k a .pivot_root mapp·t */
+                        if (remove(oldPath) == -1) {                                   /* T√∂r√∂lj√ºk a .pivot_root mapp√°t */
                             fprintf(stderr, "ERROR: remove: %s\n",  
                             strerror(errno));
                             exit(EXIT_FAILURE);                  
@@ -150,26 +150,26 @@ static int child_fn(void *arg){
                 break;
                 
             case 'p' : ;
-                        /* Child process milyen pID-vel l·tja mag·t */
+                        /* Child process milyen pID-vel l√°tja mag√°t */
                         //fprintf(stderr, "Child process pID (child)  : %ld\n", (long)getpid());  
                         
                 break;
                 
             case 'U' : ;    
-                        //system("id");                        /* Ellenırizz¸k, hogy mikÈnt l·t minket */                      
+                        //system("id");                        /* Ellen√µrizz√ºk, hogy mik√©nt l√°t minket */                      
                 break;
                 
             case 'u' : ;   
                         /*             
                         char name[100];
-                        gethostname(name, 100);                //Hostname lekÈrÈse 
+                        gethostname(name, 100);                //Hostname lek√©r√©se 
                         printf("%s\n", name);
-                        getdomainname(name, 100);              //Domainname lekÈrÈse
+                        getdomainname(name, 100);              //Domainname lek√©r√©se
                         printf("%s\n", name);
                         */
                         
-                        sethostname("new-hostname", 12);       /* ¡t·llÌtjuk a hostname-t */
-                        setdomainname("new-domainname", 14);   /* ¡t·llÌtjuk a domainname-t */ 
+                        sethostname("new-hostname", 12);       /* √Åt√°ll√≠tjuk a hostname-t */
+                        setdomainname("new-domainname", 14);   /* √Åt√°ll√≠tjuk a domainname-t */ 
                         
                         /*
                         gethostname(name, 100);
@@ -184,16 +184,16 @@ static int child_fn(void *arg){
         }
     }
     
-    //sleep(100)                  /* Idı arra, hogy megnÈzhess¸k a lÈtrejˆtt namespace-eket lsns segÌtsÈgÈvel. */
+    //sleep(100)                  /* Id√µ arra, hogy megn√©zhess√ºk a l√©trej√∂tt namespace-eket lsns seg√≠ts√©g√©vel. */
 }
 
-//*_map f·jlok felkonfigur·l·sa a User namespace-hez
+//*_map f√°jlok felkonfigur√°l√°sa a User namespace-hez
 static void set_user_maps(pid_t pid){
   char path[PATH_MAX];
   char map_buf[MAP_BUF_SIZE];
   int fd;
   
-  /* uid_map f·jlba Ìrj¸k a '0 [pID] 1' sort */                                    
+  /* uid_map f√°jlba √≠rj√ºk a '0 [pID] 1' sort */                                    
   sprintf(path,"/proc/%d/uid_map", pid);
   snprintf(map_buf, MAP_BUF_SIZE, "0 %ld 1", (long) getuid());
   fd = open(path, O_RDWR);
@@ -212,7 +212,7 @@ static void set_user_maps(pid_t pid){
   close(fd);   
                                       
                                       
-  /* Elıszˆr a setgroups f·flt ·t kell Ìrni 'deny'-ra, hogy lehessen a gid_mapot szerkeszteni */
+  /* El√µsz√∂r a setgroups f√°flt √°t kell √≠rni 'deny'-ra, hogy lehessen a gid_mapot szerkeszteni */
   sprintf(path,"/proc/%d/setgroups", pid);
   sprintf(map_buf, "deny");
   fd = open(path, O_RDWR);
@@ -231,7 +231,7 @@ static void set_user_maps(pid_t pid){
   close(fd);   
       
   
-  /* gid_map f·jlba Ìrj¸k a '0 [pID] 1' sort */                                        
+  /* gid_map f√°jlba √≠rj√ºk a '0 [pID] 1' sort */                                        
   sprintf(path,"/proc/%d/gid_map", pid);      
   snprintf(map_buf, MAP_BUF_SIZE, "0 %ld 1", (long) getgid());
                           
@@ -252,13 +252,13 @@ static void set_user_maps(pid_t pid){
   
 }
 
-//H·lÛzati be·llÌt·sok a child process-en bel¸l.
+//H√°l√≥zati be√°ll√≠t√°sok a child process-en bel√ºl.
 static void set_netns(pid_t pid){
   char str[100] = ("");
-  sprintf(str, "ip link add name veth0 type veth peer name veth1 netns %d\n", pid);    /* Virtu·lis interfÈsz p·rt hozunk lÈtre, amibıl az egyiket a child network namespace-be rakjuk */
+  sprintf(str, "ip link add name veth0 type veth peer name veth1 netns %d\n", pid);    /* Virtu√°lis interf√©sz p√°rt hozunk l√©tre, amib√µl az egyiket a child network namespace-be rakjuk */
   system(str);
   
-  /* Elıszˆr lekÈrj¸k az adott gÈp azon interfÈszÈnek nevÈt, amin kereszt¸l elÈri az internetet */
+  /* El√µsz√∂r lek√©rj√ºk az adott g√©p azon interf√©sz√©nek nev√©t, amin kereszt√ºl el√©ri az internetet */
   system("ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i==\"dev\") print $(i+1)}' > ethInterfaceName.txt");
   FILE * fp;
   if ((fp = fopen("ethInterfaceName.txt", "r")) == NULL)
@@ -274,16 +274,16 @@ static void set_netns(pid_t pid){
   fclose(fp);
   
   
-  system("ip addr add 10.200.1.1/24 dev veth0");                                       /* Felkonfigur·ljuk a veth0 interfÈszt */
+  system("ip addr add 10.200.1.1/24 dev veth0");                                       /* Felkonfigur√°ljuk a veth0 interf√©szt */
   system("ip link set veth0 up");
-  system("echo 1 > /proc/sys/net/ipv4/ip_forward");                                    /* EngedÈlyezz¸k az IP forwarding-ot */
-  system("iptables -P FORWARD DROP");                                                  /* Tˆrˆlj¸k az eddigi szab·lyokat */
+  system("echo 1 > /proc/sys/net/ipv4/ip_forward");                                    /* Enged√©lyezz√ºk az IP forwarding-ot */
+  system("iptables -P FORWARD DROP");                                                  /* T√∂r√∂lj√ºk az eddigi szab√°lyokat */
   system("iptables -F FORWARD");
   system("iptables -t nat -F");
   
-  /* A kapott interfÈsz nÈvvel kiegÈszÌtve beillesztj¸k a kˆvetkezı be·llÌt·sokba, */
-  /* amelyekben elıszˆr a 10.200.1.2/24-es cÌmrıl jˆvı forgalmat "elrejtj¸k" a rendes IP cÌm al·, */
-  /* majd engedÈlyezz¸k a virtu·lis interfÈszhez a forward-ol·st.*/
+  /* A kapott interf√©sz n√©vvel kieg√©sz√≠tve beillesztj√ºk a k√∂vetkez√µ be√°ll√≠t√°sokba, */
+  /* amelyekben el√µsz√∂r a 10.200.1.2/24-es c√≠mr√µl j√∂v√µ forgalmat "elrejtj√ºk" a rendes IP c√≠m al√°, */
+  /* majd enged√©lyezz√ºk a virtu√°lis interf√©szhez a forward-ol√°st.*/
   sprintf(str, "iptables -t nat -A POSTROUTING -s 10.200.1.2/24 -o %s -j MASQUERADE", interfaceName);
   system(str);
   sprintf(str, "iptables -A FORWARD -i %s -o veth0 -j ACCEPT", interfaceName);
@@ -292,8 +292,8 @@ static void set_netns(pid_t pid){
   system(str);  
 }
 
-//A parent process-ben kitˆrˆlj¸k azokat a h·lÛzati be·llÌt·sokat, 
-//amelyeket lÈtrehoztunk azÈrt, hogy elÈrj¸ka  child process-.t
+//A parent process-ben kit√∂r√∂lj√ºk azokat a h√°l√≥zati be√°ll√≠t√°sokat, 
+//amelyeket l√©trehoztunk az√©rt, hogy el√©rj√ºka  child process-.t
 static void del_netns(){
   system("echo 0 > /proc/sys/net/ipv4/ip_forward");
   system("iptables -P FORWARD DROP");
@@ -302,23 +302,23 @@ static void del_netns(){
 }
 
 
-int main(int agrc, const char* argv[])
+int prog(int iteration, const char ns[])
 {
-    //Input megad·sa, elıszˆr azt kell megadni, hogy h·nyszor fusson le a folyamat lÈtrehoz·s/namespace be·llÌt·s, ut·na pedig azt, hogy mely namespace-eket szeretnÈnk lÈtrehozi (fentebb szereplnek a bet˚jelek). PÈlda: pnuU
-    //Hib·s input nincs levÈdve.
+    //Input megad√°sa, el≈ësz√∂r azt kell megadni, hogy h√°nyszor fusson le a folyamat l√©trehoz√°s/namespace be√°ll√≠t√°s, ut√°na pedig azt, hogy mely namespace-eket szeretn√©nk l√©trehozi (fentebb szereplnek a bet≈±jelek). P√©lda: pnuU
+    //Hib√°s input nincs lev√©dve.
     int n;
     char input[7] = {""};
-    n = atoi(argv[1]);
-    strcpy(input, argv[2]);
+    n = iteration;
+    strcpy(input, ns);
     
     printf("Number of iteration: %d\n", n);
     printf("Types of namespaces: %s\n", input);
     
-    //Flag-eket tartalmazÛ tˆmb lÈtrehoz·sa, illetve egy integer amiben ezeket ˆsszesÌtj¸k.
+    //Flag-eket tartalmaz√≥ t√∂mb l√©trehoz√°sa, illetve egy integer amiben ezeket √∂sszes√≠tj√ºk.
     int x[7] = {CLONE_NEWCGROUP, CLONE_NEWIPC, CLONE_NEWNET, CLONE_NEWNS, CLONE_NEWPID, CLONE_NEWUSER, CLONE_NEWUTS};
     int flags = 0;
 
-    //Switch case szerkezet az input szerinti megfelelı flag lÈtrehoz·s·hoz. A '|' oper·tor bitenkÈnti vagy-ol·s.
+    //Switch case szerkezet az input szerinti megfelel√µ flag l√©trehoz√°s√°hoz. A '|' oper√°tor bitenk√©nti vagy-ol√°s.
      for(int i = 0; i < 7; i ++){
         switch(input[i]) {
             case 'c' :
@@ -347,66 +347,66 @@ int main(int agrc, const char* argv[])
         }
     }
             
-    //Child process vermÈnek inicializ·l·sa.
+    //Child process verm√©nek inicializ√°l√°sa.
     char *stack;                    /* Verem buffer kezdete */
-    char *stackTop;                 /* Verem buffer vÈge */
-    stack = malloc(STACK_SIZE);     /* Verem memÛria foglal·sa */
+    char *stackTop;                 /* Verem buffer v√©ge */
+    stack = malloc(STACK_SIZE);     /* Verem mem√≥ria foglal√°sa */
     
-    if (stack == NULL)              /* HibaellenırzÈs */
+    if (stack == NULL)              /* Hibaellen√µrz√©s */
       errExit("malloc");
       
-    stackTop = stack + STACK_SIZE;  /* FeltÈve, hogy a verem lefelÈ terjed */
-    pid_t pid;                      /* A clone() f¸ggvÈny visszatÈrÈsi ÈrtÈke */
+    stackTop = stack + STACK_SIZE;  /* Felt√©ve, hogy a verem lefel√© terjed */
+    pid_t pid;                      /* A clone() f√ºggv√©ny visszat√©r√©si √©rt√©ke */
     
-    struct child_args args;         /* LÈtrehozzuk a child process-nek ·tadandÛ argumentumok strukt˙r·j·t */
-    args.input = input;             /* ¡tadjuk majd az inputot a child process switch case-Èhez */
+    struct child_args args;         /* L√©trehozzuk a child process-nek √°tadand√≥ argumentumok strukt√∫r√°j√°t */
+    args.input = input;             /* √Åtadjuk majd az inputot a child process switch case-√©hez */
     
-    FILE * fp;                      /* IdıeredmÈny f·jlba Ìr·s·hoz. */
+    FILE * fp;                      /* Id√µeredm√©ny f√°jlba √≠r√°s√°hoz. */
      
-    //For ciklus a mÈrÈs ismÈtlÈsÈhez.
+    //For ciklus a m√©r√©s ism√©tl√©s√©hez.
     for(int j = 0; j < n; j++){
       printf("%d\n", j);
     
-      if (pipe(args.pipe_fd) == -1)        /* LÈtrehozzuk a csatorn·t, amin kereszt¸l ¸zen a parent a child-nak.*/
+      if (pipe(args.pipe_fd) == -1)        /* L√©trehozzuk a csatorn√°t, amin kereszt√ºl √ºzen a parent a child-nak.*/
         errExit("pipe");  
          
-      if ((fp = fopen("progresult.txt", "a")) == NULL) /* Megnyitjuk a f·jlt hozz·ad·sra */
+      if ((fp = fopen("progresult.txt", "a")) == NULL) /* Megnyitjuk a f√°jlt hozz√°ad√°sra */
       {
         printf("Error opening file!\n");
         exit(1);
       }
       
-      clock_gettime(CLOCK_REALTIME, &start); /* Kezdeti idıpont */
+      clock_gettime(CLOCK_REALTIME, &start); /* Kezdeti id√µpont */
     
-      fprintf(fp, "start: %ld.%09ld\n", start.tv_sec, start.tv_nsec);  /* start idı hozz·ad·sa */
+      fprintf(fp, "start: %ld.%09ld\n", start.tv_sec, start.tv_nsec);  /* start id√µ hozz√°ad√°sa */
       
-      //Child process lÈtrehoz·sa.
+      //Child process l√©trehoz√°sa.
       pid = clone(child_fn, stackTop, flags | SIGCHLD, &args);
       
-      if (pid == -1)                      /* MegnÈzz¸k, hogy lÈtrejˆtt-e a child process. */
+      if (pid == -1)                      /* Megn√©zz√ºk, hogy l√©trej√∂tt-e a child process. */
         errExit("clone");
       
-      if(strchr(input, 'U') != NULL){     /* Ha hoztunk lÈtre User namespace-t, akkor be·llÌtjuk a *_map-okat */
-        set_user_maps(pid);               /* ¡tadjuk a child process azonosÌtÛj·t is a path-hoz */    
+      if(strchr(input, 'U') != NULL){     /* Ha hoztunk l√©tre User namespace-t, akkor be√°ll√≠tjuk a *_map-okat */
+        set_user_maps(pid);               /* √Åtadjuk a child process azonos√≠t√≥j√°t is a path-hoz */    
       }
       
-      if(strchr(input, 'n') != NULL){     /* Ha hoztunk lÈtre Network namespace-t, akkor konfigur·ljuk fel */
+      if(strchr(input, 'n') != NULL){     /* Ha hoztunk l√©tre Network namespace-t, akkor konfigur√°ljuk fel */
         set_netns(pid);
       }
       
-      close(args.pipe_fd[1]);             /* Bez·rjuk a csatorn·t, hogy jelezz¸nk a child process-nek */
+      close(args.pipe_fd[1]);             /* Bez√°rjuk a csatorn√°t, hogy jelezz√ºnk a child process-nek */
               
-      if (waitpid(pid, NULL, 0) == -1)    /* Megv·rjuk, amÌg a child process visszatÈr */
+      if (waitpid(pid, NULL, 0) == -1)    /* Megv√°rjuk, am√≠g a child process visszat√©r */
                errExit("waitpid");
                     
-      clock_gettime(CLOCK_REALTIME, &stop);  /* Child process "hal·la" ut·ni idıpont */
+      clock_gettime(CLOCK_REALTIME, &stop);  /* Child process "hal√°la" ut√°ni id√µpont */
       
-      fprintf(fp, "ready: %ld.%09ld\n", stop.tv_sec, stop.tv_nsec); /* ready idı hozz·ad·sa */
+      fprintf(fp, "ready: %ld.%09ld\n", stop.tv_sec, stop.tv_nsec); /* ready id√µ hozz√°ad√°sa */
       fclose(fp);
       
       if(strchr(input, 'n') != NULL){
           del_netns();
-          if(strchr(input, 'i') == NULL){      /* Ha nem v·runk az iter·ciÛk kˆzˆtt, akkor */  
+          if(strchr(input, 'i') == NULL){      /* Ha nem v√°runk az iter√°ci√≥k k√∂z√∂tt, akkor */  
             sleep(1);                          /*  RTNETLINK answers: File exists hiba lehet */
           }                                    /* (IPC namespace-szel nem kell) */                            
       }                                                                                    
