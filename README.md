@@ -1,3 +1,4 @@
 # onlab
 Önálló laboratórium - Linux folyamat izoláció névterekkel
-Teszt
+
+rootfs.tar -> https://github.com/jpetazzo/docker-busybox/raw/master/rootfs.tar
