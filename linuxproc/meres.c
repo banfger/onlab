@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int prog(int iteration, const char ns[]);
+
 int main(int agrc, const char* argv[])
 {
     FILE * fp;
@@ -14,10 +16,8 @@ int main(int agrc, const char* argv[])
     
     int n = atoi(argv[1]);
     char ns[] = {"cinuUmp"};
-    
-    char str[120] = "";
-    sprintf(str, "./prog %d %s", n, ns);
-    system(str);
+      
+    prog(n, ns);
 
     system("awk -f tdiff.awk progresult.txt > tdiffresult.txt");
 }
