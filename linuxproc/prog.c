@@ -101,10 +101,10 @@ static int child_fn(void *arg){
                             exit(EXIT_FAILURE);                  
                         }
                            
-                        if (mount(path, path, "", MS_BIND | MS_REC, NULL) == -1) {      /* rootfs-t hozzá mount-oljuk önmagához, hogy a */                                                                                               /* pivot_root egy követelménye teljesüljön */
-                            fprintf(stderr, "ERROR: root mount: %s\n",                  /* „new_root and put_old must not be on the same */                                                                                              /* filesystem as the current root." */
-                            strerror(errno));
-                            exit(EXIT_FAILURE);                  
+                        if (mount(path, path, "", MS_BIND | MS_REC, NULL) == -1) {      /* rootfs-t hozzá mount-oljuk önmagához, hogy a */ 
+                            fprintf(stderr, "ERROR: root mount: %s\n",                  /* pivot_root egy követelménye teljesüljön */
+                            strerror(errno));                                           /* „new_root and put_old must not be on the same */
+                            exit(EXIT_FAILURE);                                         /* filesystem as the current root." */
                         }   
                         
                                 
@@ -304,7 +304,8 @@ static void del_netns(){
 
 int prog(int iteration, const char ns[])
 {
-    //Input megadása, először azt kell megadni, hogy hányszor fusson le a folyamat létrehozás/namespace beállítás, utána pedig azt, hogy mely namespace-eket szeretnénk létrehozi (fentebb szereplnek a betűjelek). Példa: pnuU
+    //Input megadása, először azt kell megadni, hogy hányszor fusson le a folyamat létrehozás/namespace beállítás, 
+    //utána pedig azt, hogy mely namespace-eket szeretnénk létrehozi (fentebb szereplnek a betűjelek). Példa: pnuU
     //Hibás input nincs levédve.
     int n;
     char input[7] = {""};
