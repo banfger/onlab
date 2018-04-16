@@ -259,19 +259,21 @@ static void set_netns(pid_t pid){
   system(str);
   
   /* Elõször lekérjük az adott gép azon interfészének nevét, amin keresztül eléri az internetet */
-  system("ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i==\"dev\") print $(i+1)}' > ethInterfaceName.txt");
-  FILE * fp;
-  if ((fp = fopen("ethInterfaceName.txt", "r")) == NULL)
-  {
-    printf("Error opening file!\n");
-    exit(1);
-  }
+  FILE *eth = popen("ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i==\"dev\") print $(i+1)}'", "r");
   
-  char interfaceName[30];
-  fscanf(fp,"%[^\n]", interfaceName);
+  char buf[256];
+  char interfaceName[20];
+  
+  while (fgets(buf, sizeof(buf), eth) != 0) {
+    strcpy(interfaceName, buf);
+  }
 
-  //printf("Data from the file:\n%s", interfaceName);
-  fclose(fp);
+  pclose(eth);
+  
+  char* newline;
+  if ((newline = strchr(interfaceName, '\n')) != NULL){
+    *newline = '\0';
+  }
   
   
   system("ip addr add 10.200.1.1/24 dev veth0");                                       /* Felkonfiguráljuk a veth0 interfészt */
