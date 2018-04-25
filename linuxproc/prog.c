@@ -372,7 +372,7 @@ int prog(int iteration, const char ns[])
     FILE * fp;                      /* Idõeredmény fájlba írásához. */
      
     //For ciklus a mérés ismétléséhez.
-    for(int j = 0; j < n; j++){
+    for(int j = 1; j < n+1; j++){
       printf("%d\n", j);
     
       if (pipe(args.pipe_fd) == -1)        /* Létrehozzuk a csatornát, amin keresztül üzen a parent a child-nak.*/
