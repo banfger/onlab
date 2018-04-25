@@ -414,9 +414,9 @@ int prog(int iteration, const char ns[])
       
       if(strchr(input, 'n') != NULL){
           del_netns();
-          if(strchr(input, 'i') == NULL){      /* Ha nem várunk az iterációk között, akkor */  
+          //if(strchr(input, 'i') == NULL){      /* Ha nem várunk az iterációk között, akkor */  
             sleep(1);                          /*  RTNETLINK answers: File exists hiba lehet */
-          }                                    /* (IPC namespace-szel nem kell) */                            
+          //}                                    /* (IPC namespace-szel nem kell néhol, de van ahol igen) */                            
       }                                                                                    
     }
 }
