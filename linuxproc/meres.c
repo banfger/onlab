@@ -14,10 +14,9 @@ int main(int agrc, const char* argv[])
     fp = fopen("tdiffresult.txt", "w");
     fclose(fp);
     
-    int n = atoi(argv[1]);
-    char ns[] = {"cinuUmp"};
+    int n = atoi(argv[2]);
       
-    prog(n, ns);
+    prog(n, argv[1]);
 
     system("awk -f tdiff.awk progresult.txt > tdiffresult.txt");
 }
