@@ -95,25 +95,32 @@ static int child_fn(void *arg){
                         strcat(oldPath, "/.pivot_root");
                         //printf("%s\n", oldPath);                                                            
                         
-                        if (mount("proc", procPath, "proc", 0, NULL) == -1) {           /* Mount-oljuk a proc könyvtárat */
+                        if(strchr(args->input, 'p') != NULL){   
+                          if (mount("proc", procPath, "proc", 0, NULL) == -1) {           /* Mount-oljuk a proc könyvtárat */
                             fprintf(stderr, "ERROR: mount proc: %s\n",
                             strerror(errno));
                             exit(EXIT_FAILURE);                  
-                        }
-                           
-                        if (mount(path, path, "", MS_BIND | MS_REC, NULL) == -1) {      /* rootfs-t hozzá mount-oljuk önmagához, hogy a */ 
-                            fprintf(stderr, "ERROR: root mount: %s\n",                  /* pivot_root egy követelménye teljesüljön */                                                            
-                            strerror(errno));						/* „new_root and put_old must not be on the same */ 
-                            exit(EXIT_FAILURE);                  			/* filesystem as the current root." */
+                          }  
+                        }   
+                        
+                         
+                        if (mount(path, path, "", MS_BIND | MS_REC, NULL) == -1) {      /* rootfs-t hozzá mount-oljuk önmagához, hogy a */                                                                                               /* pivot_root egy követelménye teljesüljön */
+                            fprintf(stderr, "ERROR: root mount: %s\n",                  /* „new_root and put_old must not be on the same */                                                                                              /* filesystem as the current root." */
+                            strerror(errno));
+                            exit(EXIT_FAILURE);                  
                         }   
                         
                                 
                         if (mkdir(oldPath, 0777) == -1) {                              /* Létrehozzuk a .pivot_root mappát */
-                              fprintf(stderr, "ERROR: mkdir: %s\n", strerror(errno));  /* Ha már egyszer megcsinálta, itt mindig ERROR lesz*/
-                              exit(EXIT_FAILURE);                                                                 
+                              if(!(strcmp(strerror(errno), "ERROR: mkdir: File exists"))){
+                                fprintf(stderr, "ERROR: mkdir: %s\n", strerror(errno));  /* Ha már egyszer megcsinálta, itt mindig ERROR lesz*/
+                                exit(EXIT_FAILURE);            
+                              }                                                             
                         }   
                         
                         //system("ls -la rootfs");
+                        printf("%s\n", oldPath);
+                        printf("%s\n", path);
                         if (syscall(SYS_pivot_root, path, oldPath) == -1) {            /* Megváltoztatjuk a root könyvtárat a rootfs-re, a régi pedig átkerül a .pivot_root-ba */
                             fprintf(stderr, "ERROR: pivot_root: %s\n",
                             strerror(errno));
@@ -259,20 +266,21 @@ static void set_netns(pid_t pid){
   system(str);
   
   /* Elõször lekérjük az adott gép azon interfészének nevét, amin keresztül eléri az internetet */
-  system("ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i==\"dev\") print $(i+1)}' > ethInterfaceName.txt");
-  FILE * fp;
-  if ((fp = fopen("ethInterfaceName.txt", "r")) == NULL)
-  {
-    printf("Error opening file!\n");
-    exit(1);
+  FILE *eth = popen("ip route get 8.8.8.8 | awk '{for(i=1;i<=NF;i++) if ($i==\"dev\") print $(i+1)}'", "r");
+  
+  char buf[256];
+  char interfaceName[20];
+  
+  while (fgets(buf, sizeof(buf), eth) != 0) {
+    strcpy(interfaceName, buf);
   }
-  
-  char interfaceName[30];
-  fscanf(fp,"%[^\n]", interfaceName);
 
-  //printf("Data from the file:\n%s", interfaceName);
-  fclose(fp);
+  pclose(eth);
   
+  char* newline;
+  if ((newline = strchr(interfaceName, '\n')) != NULL){
+    *newline = '\0';
+  }
   
   system("ip addr add 10.200.1.1/24 dev veth0");                                       /* Felkonfiguráljuk a veth0 interfészt */
   system("ip link set veth0 up");
@@ -406,9 +414,9 @@ int prog(int iteration, const char ns[])
       
       if(strchr(input, 'n') != NULL){
           del_netns();
-          //if(strchr(input, 'i') == NULL){      /* Ha nem várunk az iterációk között, akkor */  
-            sleep(1);                          	 /*  RTNETLINK answers: File exists hiba lehet */
-          //}                                    /* (IPC namespace-szel nem kell, de van ahol úgy is) */                            
+          if(strchr(input, 'i') == NULL){      /* Ha nem várunk az iterációk között, akkor */  
+            sleep(1);                          /*  RTNETLINK answers: File exists hiba lehet */
+          }                                    /* (IPC namespace-szel nem kell) */                            
       }                                                                                    
     }
 }
